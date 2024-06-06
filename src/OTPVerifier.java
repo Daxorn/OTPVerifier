@@ -61,26 +61,6 @@ public class OTPVerifier {
     }
 
 
-//    private static String generateOTP(long time) {
-//        try {
-//            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-//            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
-//            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-//
-//            byte[] timeBytes = ByteBuffer.allocate(8).putLong(time).array();
-//            byte[] encrypted = cipher.doFinal(timeBytes);
-//
-//            StringBuilder sb = new StringBuilder();
-//            for (byte b : encrypted) {
-//                sb.append(String.format("%02x", b));
-//            }
-//            return sb.toString().substring(0, 8);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-
     private static String generateOTP(long time) {
         // Create a ByteBuffer to store the OTP data
         ByteBuffer otpData = ByteBuffer.allocate(16);
@@ -91,12 +71,8 @@ public class OTPVerifier {
         otpData.putLong(time);           // 8 bytes
         // in sum: 1 + 1 + 1 + 8 = 11 bytes
 
-        // Add padding to the OTP data (5 bytes)
-//        otpData.put((byte) 255);
-//        otpData.put((byte) 255);
-//        otpData.put((byte) 255);
-//        otpData.put((byte) 255);
-//        otpData.put((byte) 255);
+        // Add padding to the OTP data (at least 5 bytes) --> done automatically by PKCS5Padding
+
 
         byte[] otpBytes = otpData.array();
         try {
