@@ -1,11 +1,14 @@
+import java.util.ArrayList;
+
 public class User {
     private byte[] secretKey;
     private int deltaTime;
-    private int counter;
+    private ArrayList<String> usedOtps;
 
     public User(byte[] secretKey, int deltaTime) {
         this.secretKey = secretKey;
         this.deltaTime = deltaTime;
+        usedOtps = new ArrayList<>(30);
     }
 
     // getters and setters
@@ -23,5 +26,9 @@ public class User {
 
     public void setDeltaTime(int deltaTime) {
         this.deltaTime = deltaTime;
+    }
+
+    public ArrayList<String> getUsedOtps() {
+        return usedOtps;
     }
 }
