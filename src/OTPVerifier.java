@@ -9,7 +9,19 @@ import java.util.*;
 public class OTPVerifier {
     private static final byte[] key = "1234567890123456".getBytes(); // Same key as used in Android app
     public static Scanner scanner = new Scanner(System.in);
-    private static Set<String> usedOTPs = new HashSet<>();
+
+    // Hashmap for userids, keys, and delta-time
+    private static Map<Integer, User> users = new HashMap<>();
+
+    static {
+        // Populate the users map
+        for (int i = 0; i <= 255; i++) {
+            byte[] secretKey = "1234567890123456".getBytes(); // Replace this with secret key generation logic later
+            int deltaTime = 0;
+            users.put(i, new User(secretKey, deltaTime));
+        }
+    }
+
     private static int uid; // User ID
     public static String otpToVerify;
     private static Cipher aes;
@@ -25,12 +37,11 @@ public class OTPVerifier {
             long time = System.currentTimeMillis() / 1000; // Current time in seconds
 
             // use AES encryption with ECB mode and no padding --> will produce the same result as the Android app
-            aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            aes = Cipher.getInstance("AES/ECB/NoPadding");
             aes.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
 
             if (verifyOTP(otpToVerify, time)) {
                 System.out.println("OTP is correct.");
-                usedOTPs.add(otpToVerify); // Add the OTP to the used OTPs set
             } else {
                 System.out.println("OTP is incorrect.");
             }
@@ -39,20 +50,31 @@ public class OTPVerifier {
     }
 
     private static boolean verifyOTP(String otp, long time) {
-        if (usedOTPs.contains(otp)) {
-            return false; // The OTP has been used before
-        }
+
         String[] otpComponents = otp.split("\\|");
         uid = Integer.parseInt(otpComponents[0]);
         otpLength = Integer.parseInt(otpComponents[1]);
         interval = Integer.parseInt(otpComponents[2]);
         hashedOtp = otpComponents[3];
 
-        // Check OTPs for the current time and the past 2 minutes
-        for (int i = -interval; i <= interval; i++) {
-            String generatedOTP = generateOTP(time - i);
+        interval = interval - users.get(uid).getDeltaTime();
+
+        // Get the user data from the users hashmap
+        User user = users.get(uid);
+
+        for (int i = user.getDeltaTime(); i < interval; i++) {
+
+            // positive delta-time
+            String generatedOTP = generateOTP(time + i);
             if (otp.equals(generatedOTP)) {
-                usedOTPs.add(otp); // Add the OTP to the used OTPs set
+                user.setDeltaTime((user.getDeltaTime()+i)/2);
+                return true;
+            }
+
+            // negative delta-time
+            generatedOTP = generateOTP(time - i);
+            if (otp.equals(generatedOTP)) {
+                user.setDeltaTime((user.getDeltaTime()+i)/2);
                 return true;
             }
         }
@@ -72,6 +94,7 @@ public class OTPVerifier {
         // in sum: 1 + 1 + 1 + 8 = 11 bytes
 
         // Add padding to the OTP data (at least 5 bytes) --> done automatically by PKCS5Padding
+        otpData.put(new byte[5]);       // 5 bytes
 
 
         byte[] otpBytes = otpData.array();
