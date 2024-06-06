@@ -25,7 +25,7 @@ public class OTPVerifier {
             long time = System.currentTimeMillis() / 1000; // Current time in seconds
 
             // use AES encryption with ECB mode and no padding --> will produce the same result as the Android app
-            aes = Cipher.getInstance("AES/ECB/NoPadding");
+            aes = Cipher.getInstance("AES/ECB/PKCS5Padding");
             aes.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
 
             if (verifyOTP(otpToVerify, time)) {
@@ -92,11 +92,11 @@ public class OTPVerifier {
         // in sum: 1 + 1 + 1 + 8 = 11 bytes
 
         // Add padding to the OTP data (5 bytes)
-        otpData.put((byte) 255);
-        otpData.put((byte) 255);
-        otpData.put((byte) 255);
-        otpData.put((byte) 255);
-        otpData.put((byte) 255);
+//        otpData.put((byte) 255);
+//        otpData.put((byte) 255);
+//        otpData.put((byte) 255);
+//        otpData.put((byte) 255);
+//        otpData.put((byte) 255);
 
         byte[] otpBytes = otpData.array();
         try {
